@@ -1,4 +1,5 @@
 import colors from 'vuetify/es5/util/colors'
+require('dotenv').config()
 
 export default {
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
@@ -6,10 +7,10 @@ export default {
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    titleTemplate: '%s - flenty',
-    title: 'flenty',
+    titleTemplate: '%s - Flenty',
+    title: 'Flenty',
     htmlAttrs: {
-      lang: 'en'
+      lang: 'es'
     },
     meta: [
       { charset: 'utf-8' },
@@ -28,6 +29,8 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
+    '@/assets/css/fonts.css',
+    '@/assets/css/main.css',
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -37,25 +40,77 @@ export default {
   buildModules: [
     // https://go.nuxtjs.dev/vuetify
     '@nuxtjs/vuetify',
+    '@nuxtjs/google-fonts',
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
+    '@nuxtjs/auth-next',
+    '@nuxtjs/dotenv',
+    'nuxt-izitoast',
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
     // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
-    baseURL: '/',
+    baseURL: process.env.API_DOMAIN,
+    credentials:true,
+    proxy:true
+  },
+
+  proxy:{
+    "/api":{
+      target:process.env.API_DOMAIN,
+      pathRewrite:{'^/api/' : ''}
+    },
+  },
+
+  auth: {
+    strategies:{
+      'laravelSanctum':{
+        provider:'laravel/sanctum',
+        url:process.env.API_DOMAIN,
+        endpoints:{
+          login:{
+            url:'/api/login',
+          }
+        }
+      }
+    },
+
+    redirect: {
+      login:'/login',
+      logout: '/login',
+      home: '/home'
+    }
+  },
+
+  izitoast: {
+    position: 'topRight',
+    transitionIn: 'bounceInLeft',
+    transitionOut: 'fadeOutRight',
+  },
+
+  googleFonts: {
+    families: {
+      Quicksand: [300, 400, 700],
+      Lato: [300, 400, 700]
+    },
+    display:'swap',
+    download:true,
+    overwriting: true,
+    base64:false,
+    fontsPath: '~assets/fonts',
+    inject:true,
   },
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
   vuetify: {
     customVariables: ['~/assets/variables.scss'],
     theme: {
-      dark: true,
+      dark: false,
       themes: {
         dark: {
           primary: colors.blue.darken2,
