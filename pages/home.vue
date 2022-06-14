@@ -1,10 +1,11 @@
 <template>
-    <h1>entramos</h1>
+    
 </template>
 
 <script>
 export default {
 
+    layout:'app',
     middleware:'auth',
 
     setup() {
