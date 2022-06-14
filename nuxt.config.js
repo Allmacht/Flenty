@@ -42,6 +42,7 @@ export default {
     // https://go.nuxtjs.dev/vuetify
     '@nuxtjs/vuetify',
     '@nuxtjs/google-fonts',
+    '@nuxtjs/composition-api/module',
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
@@ -62,10 +63,7 @@ export default {
   },
 
   proxy:{
-    "/api":{
-      target:process.env.API_DOMAIN,
-      pathRewrite:{'^/api/' : ''}
-    },
+    "/api":process.env.API_DOMAIN,
   },
 
   auth: {
