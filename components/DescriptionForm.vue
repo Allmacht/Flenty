@@ -1,5 +1,5 @@
 <template>
-    <tiptap-vuetify :value="description" :extensions="extensions"/>
+    <tiptap-vuetify v-model="des" :extensions="extensions"/>
 </template>
 
 <script>
@@ -23,11 +23,12 @@
         History
     } from "tiptap-vuetify";
 
-import { defineComponent } from '@nuxtjs/composition-api';
+import { ref, defineComponent, watchEffect } from '@nuxtjs/composition-api';
 
 export default defineComponent({
 
     components: { TiptapVuetify },
+    emits:['setDescription'],
 
     props:{
         description:{
@@ -37,8 +38,11 @@ export default defineComponent({
         }
     },
 
-    setup() {
-        const extensions   = [
+    setup(props, { emit }) {
+
+        let des = ref(props.description)
+
+        const extensions = [
                 History,
                 Blockquote,
                 Link,
@@ -64,10 +68,21 @@ export default defineComponent({
                 HardBreak,
         ]
 
+
+        watchEffect(() => {
+            emit('setDescription', des.value)
+        })
+
         return {
+            des,
             extensions
         }
     },
 })
 
 </script>
+<style>
+.tiptap-vuetify-editor__content{
+    min-height: 500px;
+}
+</style>
