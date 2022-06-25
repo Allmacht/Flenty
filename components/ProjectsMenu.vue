@@ -7,7 +7,7 @@
             </v-btn>
         </template>
 
-        <v-list>
+        <v-list dense>
             <v-list-item v-if="loading">
                 <v-list-item-avatar>
                     <v-progress-circular indeterminate :color="$store.state.primary"></v-progress-circular>
@@ -19,7 +19,22 @@
 
             <v-list-item-group v-else>
 
-                <v-subheader class="mx-auto">Sin proyectos recientes</v-subheader>
+                <v-subheader v-if="projects && projects.length === 0" class="mx-auto">Sin proyectos recientes</v-subheader>
+
+                <v-list-item v-else v-for="project in projects" :key="project.key" @click="$router.push(`/projects/${project.key}/${project.id}`)">
+                    <v-list-item-avatar>
+                        <v-img :src="project.image"></v-img>
+                    </v-list-item-avatar>
+
+                    <v-list-item-content>
+                        <v-list-item-title>{{ project.name+` (${project.key})` }}</v-list-item-title>
+                        <v-list-item-subtitle v-text="project.type.name"></v-list-item-subtitle>
+                    </v-list-item-content>
+
+                    <v-list-item-action>
+                        <v-icon>mdi-star-outline</v-icon>
+                    </v-list-item-action>
+                </v-list-item>
 
                 <v-divider></v-divider>
 
@@ -37,20 +52,39 @@
 
 <script>
 
-    import { defineComponent, ref, useAsync, useContext } from '@nuxtjs/composition-api'
+    import { defineComponent, ref, useContext, onMounted } from '@nuxtjs/composition-api'
 
     export default defineComponent({
+
         setup() {
             const { $axios } = useContext()
 
-            let loading = ref(true)
+            let loading  = ref(true)
+            let projects = ref([])
 
+            onMounted(() => {
+                $nuxt.$on('reload-projects', () => {
+                    console.log('updating projects...')
+                    getProjects()
+                })
 
-            const projects = useAsync(() => {
-                let response = $axios.get('/api/projects')
-                loading.value = false
-                return response.data
+                getProjects()
             })
+
+            const getProjects = async () => {
+
+                loading.value = true
+
+                try{
+                    let response   = await $axios.get('/api/projects')
+                    projects.value = response.data.data
+                    loading.value  = false
+
+                }catch(err){
+                    console.error(err)
+                    loading.value = false
+                }
+            }
 
             return {
                 loading,

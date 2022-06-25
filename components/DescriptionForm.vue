@@ -32,9 +32,8 @@ export default defineComponent({
 
     props:{
         description:{
-            required:true,
+            required:false,
             type:String,
-            default:`<h3>Agrega una descripción...</h3>`
         }
     },
 

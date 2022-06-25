@@ -195,7 +195,7 @@
                                             <v-card outlined>
                                                 <v-card-subtitle>Inivitar por enlace</v-card-subtitle>
                                                 <v-card-text>
-                                                    <v-text-field :value="invitationLink" class="py-3" hide-details outlined readonly append-icon="mdi-content-copy"></v-text-field>
+                                                    <v-text-field :value="invitationLink" class="py-3" hide-details outlined readonly append-icon="mdi-content-copy" @click:append="copyInvitation"></v-text-field>
                                                 </v-card-text>
                                             </v-card>
 
@@ -204,7 +204,7 @@
                                                 <v-card-text>
                                                     <v-row v-for="(member, index) in team" :key="index">
                                                         <v-col cols="8">
-                                                            <v-text-field v-model="member.email" hide-details label="Correo electrónico" filled>
+                                                            <v-text-field no-data-text="Ingese un correo electrónico" v-model="member.email" hide-details label="Correo electrónico" filled>
                                                                 <template v-if="team.length > 1" v-slot:prepend>
                                                                     <v-icon @click="deleteMemberOfTeam(index)" color="red">mdi-close</v-icon>
                                                                 </template>
@@ -257,7 +257,7 @@
 </template>
 
 <script>
-    import { ref, reactive, useAsync, computed, useContext } from '@nuxtjs/composition-api'
+    import { ref, reactive, useAsync, computed, useContext, useRouter } from '@nuxtjs/composition-api'
 
     export default {
 
@@ -274,8 +274,9 @@
             const api_domain                 = process.env.API_DOMAIN
             const base_domain                = process.env.BASE_DOMAIN
             const image_url                  = "https://ui-avatars.com/api/?"
+            const router                     = useRouter()
 
-            let step             = ref(4)
+            let step             = ref(1)
             let information_form = ref(null)
             let start_date_menu  = ref(false)
             let end_date_menu    = ref(false)
@@ -321,7 +322,7 @@
                 return `${base_domain}/register/?project=${form.uuid}`
             })
 
-            const projectTypes = useAsync(async () => { 
+            const projectTypes = useAsync(async () => {
                 let response = await $axios.get('/api/project-types')
                 return response.data.data
             })
@@ -386,6 +387,8 @@
                     loading.value = false
                     step.value    = 4
 
+                    $nuxt.$emit('reload-projects')
+
                 }catch(err){
 
                     loading.value = false
@@ -412,12 +415,19 @@
             }
 
             const addMemberToTeam = () => {
-                team.value.push({ email:"", role:"", project_id:"" })
+                team.value.push({ email:"", role:"" })
             }
 
             const deleteMemberOfTeam = index => {
-                console.log(team)
                 team.value.splice(index, 1)
+            }
+
+            const copyInvitation = () => {
+                navigator.clipboard.writeText(invitationLink.value)
+                $notify.success({
+                    title:"Correcto",
+                    message:"Enlace copiado correctamente"
+                })
             }
 
             const inviteMembers = async () => {
@@ -425,7 +435,7 @@
                 let empty = true
 
                 team.value.forEach(member => {
-                    if(member.email !== '' && member.role !== '')
+                    if(member.email !== '' || member.role !== '')
                     {
                         empty = false
                     }
@@ -433,19 +443,34 @@
 
                 if(!empty){
 
+                    team.value.forEach(member => {
+                        if(member.email === '' || member.role === '')
+                        {
+                            $notify.error({
+                                title:"Error",
+                                message:"Complete todos los campos"
+                            })
+                        }
+                        return
+                    })
+
                     let data         = {}
                     data.project     = form.uuid
                     data.invitations = team.value
 
                     try{
 
-                        $axios.post('', data)
+                        $axios.post('/api/invitations', data)
 
                     }catch(err){
 
                         console.log(err)
                         
+                    }finally{
+                        router.push(`/projects/${form.key}/${form.uuid}`)
                     }
+                }else{
+                    router.push(`/projects/${form.key}/${form.uuid}`)
                 }
             }
 
@@ -471,6 +496,7 @@
                 projectTypes,
                 end_date_menu,
                 inviteMembers,
+                copyInvitation,
                 invitationLink,
                 start_date_menu,
                 addMemberToTeam,
