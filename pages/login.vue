@@ -7,7 +7,7 @@
                     <v-card-text class="px-0">
                         <p class="text-center">¿No tienes una cuenta? Registrate <NuxtLink to="/register">aquí</NuxtLink></p>
 
-                        <v-form ref="loginForm">
+                        <v-form ref="loginForm" v-on:submit.prevent="submit">
                             <v-text-field
                                 @keydown.space.prevent
                                 v-model.trim="form.email"
@@ -32,7 +32,7 @@
                                 :append-icon="show ? 'mdi-eye' : 'mdi-eye-off'"
                             ></v-text-field>
 
-                            <v-btn class="mb-5" :loading="loading" @click="submit" block x-large :color="$store.state.primary" dark>Iniciar sesión</v-btn>
+                            <v-btn class="mb-5" :loading="loading" type="submit" block x-large :color="$store.state.primary" dark>Iniciar sesión</v-btn>
                             <v-btn class="text-lowercase" :color="$store.state.primary" block text>¿Ha olvidado su contraseña?</v-btn>
                         </v-form>
 
@@ -98,13 +98,13 @@
 
 
             return { 
-                show,
                 form,
-                required,
-                validateEmail,
-                loginForm,
+                show,
                 submit,
-                loading 
+                loading,
+                required,
+                loginForm,
+                validateEmail,
             }
         }
     }

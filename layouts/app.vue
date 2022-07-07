@@ -14,6 +14,36 @@
 							</v-list-item-content>
 						</v-list-item>
 					</template>
+
+					<v-card v-if="$route.params.key && $route.params.uuid" color="#E6EFFC" outlined>
+						<v-card-title class="py-2" style="font-size:14px">
+							<strong class="ml-1 text-truncate" :style="{ 'color' : $store.state.primary }">
+								{{ `(${$route.params.key}) ${project}` }}
+							</strong>
+						</v-card-title>
+
+						<v-divider></v-divider>
+
+						<v-card-text class="py-0 px-0">
+							<v-list-item>
+								<v-list-item-icon>
+									<v-icon :color="$store.state.primary">mdi-table-of-contents</v-icon>
+								</v-list-item-icon>
+								<v-list-item-content>
+									<v-list-item-title>Backlog</v-list-item-title>
+								</v-list-item-content>
+							</v-list-item>
+
+							<v-list-item>
+								<v-list-item-icon>
+									<v-icon :color="$store.state.primary">mdi-table-column</v-icon>
+								</v-list-item-icon>
+								<v-list-item-content>
+									<v-list-item-title>Tablero</v-list-item-title>
+								</v-list-item-content>
+							</v-list-item>
+						</v-card-text>
+					</v-card>
 				</v-list-item-group>
 			</v-list>
     	</v-navigation-drawer>
@@ -92,8 +122,8 @@
 
 		setup(){
 
-			const { $auth } = useContext()
-			const router    = useRouter()
+			const { $auth, store } = useContext()
+			const router    	   = useRouter()
 
 			let navigation   = ref(true)
 			let logoutDialog = ref(false)
@@ -108,6 +138,8 @@
 				]
 			)
 
+			const project = computed(() => store.getters.getProjectName)
+
 			const logout = async () => {
 				await $auth.logout()
 				router.push('/login')
@@ -117,6 +149,7 @@
 				name,
 				menus,
 				logout,
+				project,
 				navigation,
 				logoutDialog
 			}

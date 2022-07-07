@@ -443,6 +443,8 @@
 
                 if(!empty){
 
+                    let error = false
+
                     team.value.forEach(member => {
                         if(member.email === '' || member.role === '')
                         {
@@ -450,9 +452,14 @@
                                 title:"Error",
                                 message:"Complete todos los campos"
                             })
+                            
+                            error = true
+                            return
                         }
-                        return
+                        
                     })
+
+                    if(error) return
 
                     let data         = {}
                     data.project     = form.uuid

@@ -63,11 +63,7 @@
             let projects = ref([])
 
             onMounted(() => {
-                $nuxt.$on('reload-projects', () => {
-                    console.log('updating projects...')
-                    getProjects()
-                })
-
+                $nuxt.$on('reload-projects', () => { getProjects() })
                 getProjects()
             })
 

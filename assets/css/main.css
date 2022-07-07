@@ -5,3 +5,11 @@
 .title-quicksand{
     font-family: 'Quicksand', sans-serif;
 }
+
+.span-button{
+    cursor: default;
+}
+
+.span-button:hover{
+    color: black;
+}

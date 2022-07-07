@@ -39,7 +39,7 @@
                     </v-col>
 
                     <v-col class="px-0 py-0" cols="12" xl="6">
-                        <v-select v-model="form.assignee_id" label="Asignar" :items="members" item-text="user.name" item-value="user.folio" filled>
+                        <v-select v-model="form.assignee_id" label="Asignar" :items="members" item-text="user.name" item-value="user.id" filled>
                             <template v-slot:selection="{ item, index }">
                                 <v-img class="mr-3" :src="`https://ui-avatars.com/api/?rounded=true&background=random&name=${item.user.name}`" max-width="19px"></v-img>{{ item.user.name }}
                             </template>
@@ -59,7 +59,7 @@
 
 
                     <v-card-subtitle class="px-0">Descripción</v-card-subtitle>
-                    <description-form @setDescription="(n) => { form.description = n }"></description-form>
+                    <description-form @setDescription="(n) => { form.description = n }" :description.sync="description"></description-form>
 
                 </v-form>
             </v-card-text>
@@ -109,6 +109,7 @@ export default defineComponent({
         let priorities        = ref([])
         let members           = ref([])
         let files             = ref([])
+        let description       = ref("")
         let form              = reactive({
             summary            :"",
             duration           :"",
@@ -167,18 +168,48 @@ export default defineComponent({
         const submit = async () => {
             if(!createForm.value.validate()) return
 
-            // loading.value = true
+            if(form.description === ""){
+                $notify.error({
+                    title:"Error",
+                    message:"La descripción no debe estar vacía."
+                })
 
-            let issue = await createIssue(form)
+                return
+            }
 
-            // loading.value = false
+            loading.value = true
 
-            $notify.success({
-                title:"Correcto",
-                message:"Tarea creada correctamente"
-            })
+            try{
 
-            closeDialog()
+                let issue = await createIssue(form)
+
+                await saveFiles(issue.key)
+
+                description.value = ""
+
+                loading.value = false
+
+                $notify.success({
+                    title:"Correcto",
+                    message:"Tarea creada correctamente"
+                })
+
+                loading.value = false
+
+                $nuxt.$emit('reload-issues')
+
+                closeDialog()
+
+            }catch($err){
+
+                loading.value = false
+
+                $notify.success({
+                    title:"Correcto",
+                    message:"Ha ocurrido un error al procesar la solicitud, intente más tarde."
+                })
+
+            }
 
         }
 
@@ -189,7 +220,28 @@ export default defineComponent({
                 return response.data.data
 
             }catch(err){
-                
+                return false
+            }
+        }
+
+        const saveFiles = async (key) => {
+
+            if(files.value.length === 0) return
+
+            let form = new FormData()
+
+            for (let i = 0; i < files.value.length; i++) {
+                form.append(i, files.value[i])
+            }
+
+            try{
+                await $axios.post(`/api/attached-files/store/${props.project}/${key}`, form)
+
+            }catch(err){
+                $notify.error({
+                    title:"Error",
+                    message:"Ha ocurrido un error al procesar los archivos. Intente más tarde."
+                })
             }
         }
 
@@ -205,6 +257,7 @@ export default defineComponent({
             createForm,
             priorities,
             issue_types,
+            description,
             closeDialog,
             createIssueDialog
         }

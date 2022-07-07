@@ -33,15 +33,7 @@
 
                 <v-row justify="center" align="center">
                     <v-col cols="12">
-                        <h3>Spring activo</h3>
-                    </v-col>
-
-                    <v-col cols="12">
-                        <project-spring></project-spring>
-                    </v-col>
-
-                    <v-col cols="12">
-                        <h3>Backlog</h3>
+                        <project-sprints></project-sprints>
                     </v-col>
 
                     <v-col cols="12">
@@ -56,23 +48,31 @@
 
 <script>
 
-import { ref, useAsync, useRoute, useContext } from '@nuxtjs/composition-api'
+import { ref, useAsync, useRoute, useContext, useStore, useMeta } from '@nuxtjs/composition-api'
 
 export default {
 
     layout:'app',
     middleware:'auth',
 
+    head:{},
+
     setup() {
 
         const route      = useRoute()
         const { $axios } = useContext()
-        
+        const store      = useStore()
+        const { title }  = useMeta()
+         
         let items = ref([])
 
         const project = useAsync(async() => {
             
             let response = await $axios.get(`/api/projects/${route.value.params.key}/${route.value.params.uuid}`, { params:{ all_data:true } })
+
+            store.dispatch('setProject', response.data.data.name)
+
+            title.value = response.data.data.nam
 
             items.value.push(
                 {
